@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <Utils.h>
 #include <AntAlgorithm.h>
+#include <chrono>
 
 using namespace std;
 
@@ -12,23 +13,24 @@ int main() {
     Utils::initRandomGenerator();
 
     // Construct map.
-    const int iterateNum = 50;
+    const int iterateNum = 30;
     const int antNum = 50;
-    const int height = 50;
-    const int width = 50;
+    const int height = 30;
+    const int width = 30;
     const Point startPoint(1, 1);
-    const Point destinationPoint(48, 48);
-//    vector<Point> obstacles = { {10, 8}, {10, 9}, {10, 10}, {10, 11}, {10, 12}};
+    const Point destinationPoint(width - 2, height - 2);
     vector<Point> obstacles;
-    for (int i=0; i<30; i++)
+    for (int i=0; i<height/3*2; i++)
     {
-        obstacles.emplace_back(10, i);
+        obstacles.emplace_back(width/3, i);
     }
-    for (int i=20; i<50; i++)
+    for (int i=height/3; i<height; i++)
     {
-        obstacles.emplace_back(40, i);
+        obstacles.emplace_back(width/3*2, i);
     }
     Map map(height, width, startPoint, destinationPoint, obstacles);
+
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
     // Path planning using ant algorithm.
     AntAlgorithm algorithm(map);
@@ -39,6 +41,8 @@ int main() {
     }
     vector<Point> shortestPath = algorithm.evaluate();
 
+    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+
     // Print shortest path.
     for (int i=0; i<shortestPath.size(); i++)
     {
@@ -47,6 +51,10 @@ int main() {
 
     // Write results to text file.
     Utils::toJsonFile("out.txt", height, width, shortestPath, startPoint, destinationPoint, obstacles);
+
+    double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
+    cout << "Time used: " << ttrack << endl;
+    cout << "Path length: " << shortestPath.size() << endl;
 
     return 0;
 }
